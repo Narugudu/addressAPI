@@ -1,50 +1,97 @@
 <html>
   <head>
-    <title>{{title}}</title>
-    <!--Load the AJAX API-->
+    <title>{{title}} </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
 
-      // Load the Visualization API and the corechart package.
-      google.charts.load('current', {'packages':['corechart']});
+      google.charts.load('current', {'packages':['corechart','bar']});
 
-      // Set a callback to run when the Google Visualization API is loaded.
       google.charts.setOnLoadCallback(drawChart);
 
-      // Callback that creates and populates a data table,
-      // instantiates the pie chart, passes in the data and
-      // draws it.
       function drawChart() {
 
-        // Create the data table.
-        var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Report');
-        data.addColumn('number', 'records');
+        var currentJobRunData = new google.visualization.DataTable();
+        currentJobRunData.addColumn('string', 'report');
+        currentJobRunData.addColumn('number', 'update');
+        {% if reportsDetailList|length !=0 %}
+        currentJobRunData.addRows([
+            ['Inserted', {{reportsDetailList[0].insertCount}}],
+            ['Updated', {{reportsDetailList[0].updateCount}}]
+          ]);
+        {% endif %}
 
-        data.addRows([
-          ['Inserted', {{insertCount}}],
-          ['Updated', {{updateCount}}]
-        ]);
+        var currentReportOption = {'title':'Report of Month {{year}} - {{month}}'};
+        var currentReportPieChart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        currentReportPieChart.draw(currentJobRunData, currentReportOption);
 
-        // Set chart options
-        var options = {'title':'Report of Month {{year}} - {{month}}'};
+        var historyData=[
+          ['Date', 'Inserted', 'Updated', 'Time']]
+          {% for record in reportsDetailList%}
+            historyData.push(["{{record.startedTime}}",{{record.insertCount}},{{record.updateCount}},{{record.totalTime}}])
+          {%endfor%}
 
-        // Instantiate and draw our chart, passing in some options.
-        var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
-        chart.draw(data, options);
+        var historyDataTable = google.visualization.arrayToDataTable(historyData);
+
+        var historyTableOptions = {
+          chart: {
+            title: 'Comparisons with last jobs',
+            subtitle: 'Insert update and time',
+          },
+          bars: 'horizontal' 
+        };
+
+        var jobrunHistoryBarChart = new google.charts.Bar(document.getElementById('barchart_material'));
+        jobrunHistoryBarChart.draw(historyDataTable, google.charts.Bar.convertOptions(historyTableOptions));
+
+
+     
       }
+
+
     </script>
   </head>
 
   <body>
-    <!--Div that will hold the pie chart-->
-    {% if insertCount!=-1 and updateCount!=-1 %}
-    <h1>Report</h1>
-    <p>
-      <div id="chart_div"></div>
-    </p>
-    {% else %}
-    <h2>Data not available. Maybe job has not completed yet</h2>
-    {% endif %}
+    <nav class="light-blue lighten-1" role="navigation">
+      <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Matrixian</a>
+        <ul class="right hide-on-med-and-down">
+          <li><a href="#">About us</a></li>
+        </ul>
+  
+        <ul id="nav-mobile" class="sidenav">
+          <li><a href="#">About us</a></li>
+        </ul>
+        <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+      </div>
+    </nav>
+    <div class="container">  
+      <!--Div that will hold the pie chart-->
+      {% if reportsDetailList|length !=0 %}
+      <h1>Report</h1>
+      <hr>
+      <blockquote>
+        <b>Start Time :</b> {{reportsDetailList[0].startedTime}} <b>End Time:</b> {{reportsDetailList[0].endTime}}
+      </blockquote>
+      <div class="row">
+        <div class="col m4 s12">
+          <div id="chart_div" ></div>
+        </div>
+        <div class="col m8 s12">
+          <div id="barchart_material">
+        </div>
+      </div>
+      {% else %}
+      <h1>Data not available. </h1>
+      <hr>
+      <blockquote>
+        Maybe job has not completed yet. Please contact your system administrator
+      </blockquote>
+      {% endif %}
+    </div>
   </body>
 </html>
