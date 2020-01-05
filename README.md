@@ -1,6 +1,9 @@
 # AddressAPI
 The repository is a sample project for Matrixian group. It takes input from CSV file and updates databse every month or inserts new data.
 
+![Image of Yaktocat](https://github.com/Narugudu/addressAPI/blob/master/Screenshot%20from%202020-01-05%2013-14-11.png)
+
+
 # Getting started
 The application works in two parts.
 * DBLoader
